@@ -8,7 +8,7 @@
   <pipelines group="defaultGroup">
     <pipeline name="ML_Pipeline">
       <materials>
-        <git url="https://github.com/tank4gun/DockerPipelineNew" />
+        <git url="https://github.com/tank4gun/DockerPipelineTest" />
       </materials>
       <stage name="ModelTraining" fetchMaterials="false" artifactCleanupProhibited="true">
         <jobs>
