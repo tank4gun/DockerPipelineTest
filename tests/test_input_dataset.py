@@ -3,6 +3,7 @@ import pandas as pd
 
 
 def test_input_data_size():
+    print("Test started")
     dataset = pd.read_csv("../data/diabetes.txt", sep='\t').to_numpy()
     dataset = np.where(np.isnan(dataset), None, dataset)
     for data_element in dataset:
