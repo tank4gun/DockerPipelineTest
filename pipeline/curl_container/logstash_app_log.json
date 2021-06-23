@@ -1,0 +1,77 @@
+{
+    "aliases" : { },
+    "mappings" : {
+      "properties" : {
+        "@log_name" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "@timestamp" : {
+          "type" : "date"
+        },
+        "age" : {
+          "type" : "long"
+        },
+        "bmi" : {
+          "type" : "float"
+        },
+        "bp" : {
+          "type" : "float"
+        },
+        "logtime" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "prediction" : {
+          "type" : "float"
+        },
+        "s1" : {
+          "type" : "long"
+        },
+        "s2" : {
+          "type" : "float"
+        },
+        "s3" : {
+          "type" : "long"
+        },
+        "s4" : {
+          "type" : "float"
+        },
+        "s5" : {
+          "type" : "float"
+        },
+        "s6" : {
+          "type" : "long"
+        },
+        "sex" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        }
+      }
+    },
+    "settings" : {
+      "index" : {
+        "number_of_shards" : "1",
+        "number_of_replicas" : "1"
+      }
+    }
+}
+

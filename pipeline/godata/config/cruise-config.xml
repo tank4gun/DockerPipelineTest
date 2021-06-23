@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="138">
+  <server agentAutoRegisterKey="a72e68b4-95fa-4545-bbe8-0ebfb2b706d7" webhookSecret="34e889f9-7772-49b3-a3fd-5ec0d256ba85" commandRepositoryLocation="default" serverId="94eee446-6b7e-4209-b6e2-0587a9742558" tokenGenerationKey="046c4d11-22e0-4280-82f3-f2db3530bd5a">
+    <artifacts>
+      <artifactsDir>artifacts</artifactsDir>
+    </artifacts>
+  </server>
+  <pipelines group="defaultGroup">
+    <pipeline name="ML_Pipeline">
+      <materials>
+        <git url="https://github.com/tank4gun/DockerPipelineNew" />
+      </materials>
+      <stage name="ModelTraining" fetchMaterials="false" artifactCleanupProhibited="true">
+        <jobs>
+          <job name="ModelFit">
+            <tasks>
+              <exec command="/bin/bash">
+                <arg>-c</arg>
+                <arg>dvc pull -f</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash" workingdir="src/">
+                <arg>-c</arg>
+                <arg>python train.py</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-c</arg>
+                <arg>dvc add data</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-c</arg>
+                <arg>git add data.dvc</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-c</arg>
+                <arg>dvc push</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="ModelTesting" fetchMaterials="false" artifactCleanupProhibited="true">
+        <jobs>
+          <job name="TestModel">
+            <tasks>
+              <exec command="/bin/bash">
+                <arg>-c</arg>
+                <arg>dvc pull</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash" workingdir="tests/">
+                <arg>-c</arg>
+                <arg>python test_input_dataset.py</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash" workingdir="tests/">
+                <arg>-c</arg>
+                <arg>python test_best_model.py</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+</cruise>

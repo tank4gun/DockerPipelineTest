@@ -1,0 +1,120 @@
+version: "3.9"
+services:
+  flask_app:
+    build:
+      context: ./../app
+      dockerfile: Dockerfile
+    volumes:
+      - ./../data:/data
+    ports:
+      - "5100:5100"
+    user: root
+  gocd-server:
+    build: ./go_server
+    user: root
+    ports:
+      - "8153:8153"
+    volumes:
+      - ./godata/config/cruise-config.xml:/godata/config/cruise-config.xml
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://gocd-server:8153/go"]
+        interval: 5s
+        timeout: 10s
+        retries: 15
+  gocd-agent:
+    build: 
+      context: ./go_agent
+      dockerfile: Dockerfile
+    user: root
+    volumes:
+      - ./../:/go/pipelines/ML_Pipeline/
+    links:
+      - "gocd-server"
+    depends_on:
+      gocd-server:
+        condition: service_healthy
+    environment:
+      GO_SERVER_URL: http://gocd-server:8153/go
+      AGENT_AUTO_REGISTER_KEY: 'a72e68b4-95fa-4545-bbe8-0ebfb2b706d7'
+  elasticsearch:
+    image: "docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2"
+    user: root
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    environment:
+      ES_JAVA_OPTS: "-Xms750m -Xmx750m"
+      discovery.type: "single-node"
+      http.port: 9200
+      network.host: 0.0.0.0
+      network.bind_host: 0.0.0.0
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://elasticsearch:9200/_cat/health"]
+        interval: 5s
+        timeout: 10s
+        retries: 15
+  td-agent:
+    build:
+      context: ./td_agent
+      dockerfile: Dockerfile
+    ports:
+      - 9880:9880
+    user: root
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      FLUENTD_CONF: "td-agent.conf"
+      ELASTICSEARCH_HOST: "elasticsearch"
+      ELASTICSEARCH_PORT: 9200
+  curl-container:
+    build:
+      context: ./curl_container
+      dockerfile: Dockerfile
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    command: sh -c "./fluentd/create_indices.sh"
+    user: root
+  kibana:
+    image: "docker.elastic.co/kibana/kibana-oss:7.10.2"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - 5601:5601
+    links:
+      - elasticsearch
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    environment:
+      server.port: 5601
+      server.host: "0.0.0.0"
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://kibana:5601/"]
+        interval: 5s
+        timeout: 10s
+        retries: 15
+  minio:
+    restart: always
+    image: minio/minio:RELEASE.2021-02-11T08-23-43Z.hotfix.b3c56b53f
+    container_name: mlflow_s3
+    expose:
+      - "9001"
+    ports:
+      - "9001:9000"
+    environment:
+      MINIO_ACCESS_KEY: "admin"
+      MINIO_SECRET_KEY: "password"
+    command: server /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    volumes:
+      - ./minio_data/:/data

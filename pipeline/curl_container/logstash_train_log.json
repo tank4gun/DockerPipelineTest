@@ -1,0 +1,56 @@
+{
+    "aliases" : { },
+    "mappings" : {
+      "properties" : {
+        "@log_name" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "@timestamp" : {
+          "type" : "date"
+        },
+        "a1" : {
+          "type" : "float"
+        },
+        "a10" : {
+          "type" : "float"
+        },
+        "a2" : {
+          "type" : "float"
+        },
+        "a3" : {
+          "type" : "float"
+        },
+        "a4" : {
+          "type" : "float"
+        },
+        "a5" : {
+          "type" : "float"
+        },
+        "a6" : {
+          "type" : "float"
+        },
+        "a7" : {
+          "type" : "float"
+        },
+        "a8" : {
+          "type" : "float"
+        },
+        "a9" : {
+          "type" : "float"
+        }
+      }
+    },
+    "settings" : {
+      "index" : {
+        "number_of_shards" : "1",
+        "number_of_replicas" : "1"
+      }
+    }
+}
+
